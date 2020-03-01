@@ -1,0 +1,20 @@
+#mainCanvas
+{
+    max-width: 500px;
+}
+
+#patchCanvas
+{
+    max-width: 50px;
+    max-height: 50px;
+}
+
+#imageSrc
+{
+    display: none;
+}
+
+#selectROIButton
+{
+    display: none;
+}
