@@ -16,7 +16,7 @@ let refresh = false;
 let dragging = false;
 let origPoint;
 let processed = false;
-let threshold = 0.1;
+let threshold = 0.08;
 let matches = [];
 
 function onOpenCvReady() {
@@ -27,6 +27,89 @@ function onOpenCvReady() {
     img = new cv.Mat();
     template = new cv.Mat();
   };
+}
+
+function iou(x1, y1, x2, y2, w, h)
+{
+  // Calculate IoU for two boxes with same width and height, 
+  // just different location
+  let inter = {
+    x1: Math.max(x1, x2),
+    y1: Math.max(y1, y2),
+    x2: Math.min(x1 + w, x2 + w),
+    y2: Math.min(y1 + h, y2 + h)
+  };
+
+  let interArea = Math.max(0, inter.x2 - inter.x1) * Math.max(0, inter.y2 - inter.y1);
+  let boxArea = w*h;
+
+  let iou = interArea / (2*boxArea - interArea);
+
+  return iou;
+}
+
+let iouThreshold = 0.7;
+
+function combineMatches(matches)
+{
+  // Combine overlapping matches to a single one
+  // Measure overlap by IoU, combine matches with IoU of > 0.7
+
+  let w = template.cols;
+  let h = template.rows;
+
+  // List of lists of dicts
+  // [ [pt1, pt2], [pt3], [pt4, pt5] ] where pt1 and pt2 belong to each other etc.
+  let groups = [];
+
+  for(let item of matches)
+  {
+    let foundMatch = false;
+    for(let combinedList of groups)
+    {
+      for(let cItem of combinedList)
+      {
+        if(iou(item.x, item.y, cItem.x, cItem.y, w, h) > iouThreshold)
+        {
+          combinedList.push(item);
+          foundMatch = true;
+          break;
+        }
+      }
+      
+      if(foundMatch)
+      {
+        break;
+      }
+
+    }
+
+    if(!foundMatch)
+    {
+      groups.push([item]);
+    }
+  }
+
+  let combinedMatches = [];
+
+  for(let group of groups)
+  {
+    let sumX = 0;
+    let sumY = 0;
+
+    for(let item of group)
+    {
+      sumX += item.x;
+      sumY += item.y;
+    }
+
+    combinedMatches.push({
+      x: Math.floor(sumX / group.length),
+      y: Math.floor(sumY / group.length)
+    });
+  }
+
+  return combinedMatches;
 }
 
 function findMatches()
@@ -53,6 +136,8 @@ function findMatches()
       }
     }
   }
+
+  matches = combineMatches(matches);
 
   heatmap.delete();
   mask.delete();
@@ -147,7 +232,7 @@ function draw() {
     let color = new cv.Scalar(0, 255, 0, 255);
     if(matches.length > 0)
     {
-      matches.forEach(function(item, index, array)
+      matches.forEach((item, index, array) =>
       {      
         let point1 = new cv.Point(item.x, item.y);
         let point2 = new cv.Point(item.x + template.cols, item.y + template.rows);
