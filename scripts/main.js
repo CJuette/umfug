@@ -15,6 +15,9 @@ let rect;
 let refresh = false;
 let dragging = false;
 let origPoint;
+let processed = false;
+let threshold = 0.1;
+let matches = [];
 
 function onOpenCvReady() {
   cv['onRuntimeInitialized']=()=>{
@@ -26,11 +29,46 @@ function onOpenCvReady() {
   };
 }
 
-function updateStyleByState(state)
+function findMatches()
+{
+  let heatmap = cv.Mat.zeros(img.rows, img.cols, cv.CV_32F);;
+  let mask = new cv.Mat();
+  cv.matchTemplate(img, template, heatmap, cv.TM_SQDIFF, mask);
+
+  cv.normalize( heatmap, heatmap, 0, 1, cv.NORM_MINMAX, -1 );
+  // Since there is no "cv.findNonZero" in cv.js, we just go through the heatmap
+  // and find our points ourselves...
+  matches = [];
+  for(let row = 0; row < heatmap.rows; row++)
+  {
+    for(let col = 0; col < heatmap.cols; col++)
+    {
+      let value = heatmap.floatAt(row, col);
+      if(value < threshold)
+      {
+        matches.push({
+          x: col,
+          y: row
+        })
+      }
+    }
+  }
+
+  heatmap.delete();
+  mask.delete();
+
+  processed = true;
+  refresh = true;
+
+  return matches;
+}
+
+function updateState(state)
 {
   if(state == "init")
   {
     roiButton.style.display = "none";
+    processed = false;
   }
   else if(state == "loaded" || state == "roiselected")
   {
@@ -39,9 +77,17 @@ function updateStyleByState(state)
     roiButton.style.display = "inline-block";
     roiButton.innerHTML = "Select New Patch";
     roiButton.removeAttribute("disabled");
+
+    if(state == "roiselected" && processed == false)
+    {
+      findMatches();
+      processed = true;
+      refresh = true;
+    }
   }
   else if(state == "selectroi")
   {
+    processed = false;
     canvas.style.cursor = 'crosshair';
     document.body.style.backgroundColor = '#eee';
     roiButton.style.display = "inline-block";
@@ -58,7 +104,6 @@ imgElement.onload = function() {
   img = cv.imread(imgElement);
   refresh = true;
   state = "selectroi";
-  updateStyleByState(state);
 };
 
 roiButton.addEventListener('click', (e) => {
@@ -70,7 +115,6 @@ roiButton.addEventListener('click', (e) => {
   {
     state = "selectroi";
   }
-  updateStyleByState(state);
 }, false);
 
 function draw() {
@@ -116,19 +160,43 @@ function draw() {
     {
       console.log(e);
     }
-  }  
+  }
+  else if(state == "roiselected" && processed)
+  {
+    // Draw boxes at match-locations
+    let color = new cv.Scalar(0, 255, 0, 255);
+    if(matches.length > 0)
+    {
+      matches.forEach(function(item, index, array)
+      {      
+        let point1 = new cv.Point(item.x, item.y);
+        let point2 = new cv.Point(item.x + template.cols, item.y + template.rows);
+
+        cv.rectangle(displayImage, point1, point2, color, 2, cv.LINE_8, 0);
+      });
+    }
+
+    try
+    {
+      cv.imshow(canvas, displayImage);
+    }
+    catch(e)
+    {
+      console.log(e);
+    }
+  }
 
   displayImage.delete();
 }
 
-requestAnimationFrame(drawLoop);
-function drawLoop() {
-  updateStyleByState(state);
+requestAnimationFrame(mainLoop);
+function mainLoop() {
+  updateState(state);
   if (refresh) {
       refresh = false;
       draw();
   }
-  requestAnimationFrame(drawLoop);
+  requestAnimationFrame(mainLoop);
 }
 
 // Add Mouse-Listeners to document for dragging ROI
@@ -139,6 +207,11 @@ function drawLoop() {
     let bounds = canvas.getBoundingClientRect();
     let x = event.pageX - bounds.left - scrollX;
     let y = event.pageY - bounds.top - scrollY;
+
+    if(x < 0 || y < 0 || x >= bounds.right - bounds.left || y >= bounds.bottom - bounds.top)
+    {
+      return;
+    }
 
     if(event.type == "mousedown")
     {
@@ -155,7 +228,6 @@ function drawLoop() {
     {
       dragging = false;
       state = "roiselected";
-      updateStyleByState(state);
     }
     else if(event.type == "mousemove")
     {
