@@ -1,6 +1,7 @@
 #mainCanvas
 {
     max-width: 500px;
+    cursor: crosshair;
 }
 
 #previewCanvas
@@ -15,11 +16,6 @@
 }
 
 #imageSrc
-{
-    display: none;
-}
-
-#selectROIButton
 {
     display: none;
 }

@@ -67,16 +67,11 @@ function updateState(state)
 {
   if(state == "init")
   {
-    roiButton.style.display = "none";
     processed = false;
   }
   else if(state == "loaded" || state == "roiselected")
   {
-    canvas.style.cursor = 'auto';
     document.body.style.backgroundColor = 'white';
-    roiButton.style.display = "inline-block";
-    roiButton.innerHTML = "Select New Patch";
-    roiButton.removeAttribute("disabled");
 
     if(state == "roiselected" && processed == false)
     {
@@ -88,11 +83,7 @@ function updateState(state)
   else if(state == "selectroi")
   {
     processed = false;
-    canvas.style.cursor = 'crosshair';
     document.body.style.backgroundColor = '#eee';
-    roiButton.style.display = "inline-block";
-    roiButton.setAttribute("disabled", "true");
-    roiButton.innerHTML = "Select New Patch";
   }
 }
 
@@ -105,17 +96,6 @@ imgElement.onload = function() {
   refresh = true;
   state = "selectroi";
 };
-
-roiButton.addEventListener('click', (e) => {
-  if(state == "selectroi")
-  {
-    state = "loaded";
-  }
-  else if(state == "loaded" || state == "roiselected")
-  {
-    state = "selectroi";
-  }
-}, false);
 
 function draw() {
   let displayImage;
@@ -202,29 +182,35 @@ function mainLoop() {
 // Add Mouse-Listeners to document for dragging ROI
 "down,up,move".split(",").forEach(name => document.addEventListener("mouse" + name, (event) => {
 
+  let bounds = canvas.getBoundingClientRect();
+  let x = event.pageX - bounds.left - scrollX;
+  let y = event.pageY - bounds.top - scrollY;
+
+  // Check if inside canvas
+  if(x < 0 || y < 0 || x >= bounds.right - bounds.left || y >= bounds.bottom - bounds.top)
+  {
+    return;
+  }
+
+  if(event.type == "mousedown")
+  {
+    dragging = true;
+    rect.x = x;
+    rect.y = y;
+    rect.width = 0;
+    rect.height = 0;
+    origPoint.x = x;
+    origPoint.y = y;
+    refresh = true;
+    state = "selectroi";
+
+    return;
+  }
+
   if(state == "selectroi")
   {
-    let bounds = canvas.getBoundingClientRect();
-    let x = event.pageX - bounds.left - scrollX;
-    let y = event.pageY - bounds.top - scrollY;
 
-    if(x < 0 || y < 0 || x >= bounds.right - bounds.left || y >= bounds.bottom - bounds.top)
-    {
-      return;
-    }
-
-    if(event.type == "mousedown")
-    {
-      dragging = true;
-      rect.x = x;
-      rect.y = y;
-      rect.width = 0;
-      rect.height = 0;
-      origPoint.x = x;
-      origPoint.y = y;
-      refresh = true;
-    }
-    else if(event.type == "mouseup")
+    if(event.type == "mouseup")
     {
       dragging = false;
       state = "roiselected";
