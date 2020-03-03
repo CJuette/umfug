@@ -4,9 +4,13 @@ const imgElement = document.getElementById('imageSrc');
 const inputElement = document.getElementById('fileInput');
 const canvas = document.getElementById('mainCanvas');
 const patchCanvas = document.getElementById('patchCanvas');
-const roiButton = document.getElementById('selectROIButton')
+const processedCanvas = document.getElementById('processedCanvas');
+const roiButton = document.getElementById('selectROIButton');
+const colorPicker = document.getElementById('colorPicker');
+const opacitySlider = document.getElementById('opacitySlider');
 
 let img;
+let processedImage;
 let template;
 let state = "init";
 
@@ -16,6 +20,7 @@ let refresh = false;
 let dragging = false;
 let origPoint;
 let processed = false;
+let matchesFound = false;
 let threshold = 0.08;
 let matches = [];
 
@@ -26,6 +31,7 @@ function onOpenCvReady() {
     origPoint = new cv.Point(0,0);
     img = new cv.Mat();
     template = new cv.Mat();
+    processedImage = new cv.Mat();
   };
 }
 
@@ -112,9 +118,67 @@ function combineMatches(matches)
   return combinedMatches;
 }
 
+function processImage()
+{
+  // Do all the replacing and stuff depending on the options
+  // For now only coloring, but maybe other stuff in the future
+
+  let opacity = parseInt(opacitySlider.value) / 100.0;
+  let colorString = colorPicker.value;
+  // parse the color-value to RGB
+  let color = new cv.Scalar(
+    parseInt(colorString.slice(1,3), 16),
+    parseInt(colorString.slice(3,5), 16),
+    parseInt(colorString.slice(5,7), 16),
+    255
+  );
+
+  processedImage = img.clone();
+
+  if(matches.length > 0)
+  {
+    for(let match of matches)
+    {      
+      let point1 = new cv.Point(match.x, match.y);
+      let point2 = new cv.Point(match.x + template.cols, match.y + template.rows);
+
+      // Draw everything over manually
+      for(let row = point1.y; row <= point2.y; row++)
+      {
+        for(let col = point1.x; col <= point2.x; col++)
+        {
+          let pixel = processedImage.ucharPtr(row, col);
+          for(let c = 0; c < 4; c++)
+          {
+            pixel[c] = Math.floor(pixel[c] * (1.0 - opacity) + color[c] * opacity);
+          }
+        }
+      }
+
+      // try
+      // {
+      //   cv.rectangle(processedOverlay, point1, point2, color, cv.FILLED, cv.LINE_8, 0);
+      // }
+      // catch(e)
+      // {
+      //   console.log(e);
+      // }
+    }
+  }
+
+  // try
+  // {
+  //   cv.addWeighted(img, 1.0 - opacity, processedOverlay, opacity, 0.0, processedImage);
+  // }
+  // catch(e)
+  // {
+  //   console.log(e);
+  // }
+}
+
 function findMatches()
 {
-  let heatmap = cv.Mat.zeros(img.rows, img.cols, cv.CV_32F);;
+  let heatmap = cv.Mat.zeros(img.rows, img.cols, cv.CV_32F);
   let mask = new cv.Mat();
   cv.matchTemplate(img, template, heatmap, cv.TM_SQDIFF, mask);
 
@@ -142,7 +206,6 @@ function findMatches()
   heatmap.delete();
   mask.delete();
 
-  processed = true;
   refresh = true;
 
   return matches;
@@ -153,21 +216,35 @@ function updateState(state)
   if(state == "init")
   {
     processed = false;
+    matchesFound = false;
   }
   else if(state == "loaded" || state == "roiselected")
   {
     document.body.style.backgroundColor = 'white';
 
-    if(state == "roiselected" && processed == false)
+    if(state == "roiselected")
     {
-      findMatches();
-      processed = true;
-      refresh = true;
+      if(matchesFound == false)
+      {
+        //TODO: Add buffering-overlay
+        findMatches();
+        matchesFound = true;
+        refresh = true;
+      }
+
+      if(processed == false)
+      {
+        processImage();
+        processed = true;
+        refresh = true;
+      }
     }
+      
   }
   else if(state == "selectroi")
   {
     processed = false;
+    matchesFound = false;
     document.body.style.backgroundColor = '#eee';
   }
 }
@@ -181,6 +258,16 @@ imgElement.onload = function() {
   refresh = true;
   state = "selectroi";
 };
+
+colorPicker.addEventListener('change', (e) => {
+  processed = false;
+  updateState();
+}, false);
+
+opacitySlider.addEventListener('input', (e) => {
+  processed = false;
+  updateState();
+}, false);
 
 function draw() {
   let displayImage;
@@ -226,28 +313,43 @@ function draw() {
       console.log(e);
     }
   }
-  else if(state == "roiselected" && processed)
+  else if(state == "roiselected")
   {
-    // Draw boxes at match-locations
-    let color = new cv.Scalar(0, 255, 0, 255);
-    if(matches.length > 0)
+    if(matchesFound)
     {
-      matches.forEach((item, index, array) =>
-      {      
-        let point1 = new cv.Point(item.x, item.y);
-        let point2 = new cv.Point(item.x + template.cols, item.y + template.rows);
+      // Draw boxes at match-locations
+      let color = new cv.Scalar(0, 255, 0, 255);
+      if(matches.length > 0)
+      {
+        matches.forEach((item, index, array) =>
+        {      
+          let point1 = new cv.Point(item.x, item.y);
+          let point2 = new cv.Point(item.x + template.cols, item.y + template.rows);
 
-        cv.rectangle(displayImage, point1, point2, color, 2, cv.LINE_8, 0);
-      });
+          cv.rectangle(displayImage, point1, point2, color, 2, cv.LINE_8, 0);
+        });
+      }
+
+      try
+      {
+        cv.imshow(canvas, displayImage);
+      }
+      catch(e)
+      {
+        console.log(e);
+      }
     }
 
-    try
+    if(processed)
     {
-      cv.imshow(canvas, displayImage);
-    }
-    catch(e)
-    {
-      console.log(e);
+      try
+      {
+        cv.imshow(processedCanvas, processedImage);
+      }
+      catch(e)
+      {
+        console.log(e);
+      }
     }
   }
 
