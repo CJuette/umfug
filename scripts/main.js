@@ -11,6 +11,7 @@ const opacitySlider = document.getElementById('opacitySlider');
 const downloadButton = document.getElementById('downloadButton');
 const loadingOverlay = document.getElementById('loadingOverlay');
 const loadingMessage = document.getElementById('loadingTitle');
+const copyToInputButton = document.getElementById('copyToInput');
 
 let img;
 let processedImage;
@@ -306,6 +307,7 @@ function updateState(state)
     processedCanvas.style.display = "inline";
     patchCanvas.style.display = "inline";
     downloadButton.style.display = "inline";
+    copyToInputButton.style.display = "inline";
       
   }
   else if(state == "selectroi")
@@ -314,6 +316,13 @@ function updateState(state)
     matchesFound = false;
     document.body.style.backgroundColor = '#eee';
     canvas.style.display = "inline";
+
+    colorPicker.style.display = "none";
+    opacitySlider.style.display = "none";
+    processedCanvas.style.display = "none";
+    patchCanvas.style.display = "none";
+    downloadButton.style.display = "none";
+    copyToInputButton.style.display = "none";
   }
 }
 
@@ -340,6 +349,14 @@ opacitySlider.addEventListener('input', (e) => {
 downloadButton.onclick = function(){
   this.href = processedCanvas.toDataURL();
   this.download = "ifar_processed_image.png";
+};
+
+copyToInputButton.onclick = function(){
+  img = processedImage.clone();
+  processed = false;
+  refresh = true;
+  state = "selectroi";
+  updateState();
 };
 
 function draw() {
