@@ -8,6 +8,7 @@ const processedCanvas = document.getElementById('processedCanvas');
 const roiButton = document.getElementById('selectROIButton');
 const colorPicker = document.getElementById('colorPicker');
 const opacitySlider = document.getElementById('opacitySlider');
+const downloadButton = document.getElementById('downloadButton');
 
 let img;
 let processedImage;
@@ -221,10 +222,6 @@ function updateState(state)
   else if(state == "loaded" || state == "roiselected")
   {
     document.body.style.backgroundColor = 'white';
-    colorPicker.style.display = "inline";
-    opacitySlider.style.display = "inline";
-    processedCanvas.style.display = "inline";
-    patchCanvas.style.display = "inline";
 
     if(state == "roiselected")
     {
@@ -243,6 +240,12 @@ function updateState(state)
         refresh = true;
       }
     }
+      
+    colorPicker.style.display = "inline";
+    opacitySlider.style.display = "inline";
+    processedCanvas.style.display = "inline";
+    patchCanvas.style.display = "inline";
+    downloadButton.style.display = "inline";
       
   }
   else if(state == "selectroi")
@@ -273,6 +276,11 @@ opacitySlider.addEventListener('input', (e) => {
   processed = false;
   updateState();
 }, false);
+
+downloadButton.onclick = function(){
+  this.href = processedCanvas.toDataURL();
+  this.download = "ifar_processed_image.png";
+};
 
 function draw() {
   let displayImage;
