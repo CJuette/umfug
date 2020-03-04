@@ -1,5 +1,6 @@
 #mainCanvas
 {
+    display: none;
     max-width: 500px;
     cursor: crosshair;
 }
@@ -7,15 +8,27 @@
 #processedCanvas
 {
     max-width: 500px;
+    display: none;
 }
 
 #patchCanvas
 {
     max-width: 50px;
     max-height: 50px;
+    display: none;
 }
 
 #imageSrc
+{
+    display: none;
+}
+
+#colorPicker
+{
+    display: none;
+}
+
+#opacitySlider
 {
     display: none;
 }

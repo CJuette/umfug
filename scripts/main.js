@@ -221,6 +221,10 @@ function updateState(state)
   else if(state == "loaded" || state == "roiselected")
   {
     document.body.style.backgroundColor = 'white';
+    colorPicker.style.display = "inline";
+    opacitySlider.style.display = "inline";
+    processedCanvas.style.display = "inline";
+    patchCanvas.style.display = "inline";
 
     if(state == "roiselected")
     {
@@ -246,6 +250,7 @@ function updateState(state)
     processed = false;
     matchesFound = false;
     document.body.style.backgroundColor = '#eee';
+    canvas.style.display = "inline";
   }
 }
 
