@@ -9,6 +9,8 @@ const roiButton = document.getElementById('selectROIButton');
 const colorPicker = document.getElementById('colorPicker');
 const opacitySlider = document.getElementById('opacitySlider');
 const downloadButton = document.getElementById('downloadButton');
+const loadingOverlay = document.getElementById('loadingOverlay');
+const loadingMessage = document.getElementById('loadingTitle');
 
 let img;
 let processedImage;
@@ -25,14 +27,68 @@ let matchesFound = false;
 let threshold = 0.08;
 let matches = [];
 
-function onOpenCvReady() {
-  cv['onRuntimeInitialized']=()=>{
+// showLoadingOverlay();
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+
+async function onOpenCvReady() 
+{
+  cv['onRuntimeInitialized']= async function(){
     console.log("OpenCV loaded");
     rect = new cv.Rect(0, 0, 0, 0);
     origPoint = new cv.Point(0,0);
     img = new cv.Mat();
     template = new cv.Mat();
     processedImage = new cv.Mat();
+    await sleep(2000);
+    console.log("Test");
+    hideLoadingOverlay();
+    console.log("Schlest");
+  };
+}
+
+function showLoadingOverlay(message="")
+{
+  if(message != "")
+  {
+    loadingMessage.innerHTML = message;
+  }
+
+  loadingOverlay.style.backgroundColor = "rgba(0,0,0,0)";
+  loadingOverlay.style.display = "block";
+  loadingOverlay.animate({
+    backgroundColor: ["rgba(0,0,0,0)", "rgba(0,0,0,0.5)"]
+  },
+  {
+  duration: 500,
+  iterations: 1,
+  delay: 0,
+  fill: "forwards"
+  });
+}
+
+function updateLoadingOverlay(message)
+{
+  loadingMessage.innerHTML = message;
+}
+
+function hideLoadingOverlay()
+{
+  loadingOverlay.style.backgroundColor = "rgba(0,0,0,0.5)";
+  loadingOverlay.style.display = "block";
+  loadingOverlay.animate({
+    backgroundColor: ["rgba(0,0,0,0.5)", "rgba(0,0,0,0)"]
+  },
+  {
+  duration: 500,
+  iterations: 1,
+  delay: 0,
+  fill: "forwards"
+  }).onfinish = () => {
+    loadingOverlay.style.display = "none";
   };
 }
 
@@ -227,20 +283,24 @@ function updateState(state)
     {
       if(matchesFound == false)
       {
-        //TODO: Add buffering-overlay
+        // showLoadingOverlay("Finding matches...");
         findMatches();
         matchesFound = true;
         refresh = true;
+        // hideLoadingOverlay();
       }
 
       if(processed == false)
       {
+        // showLoadingOverlay("Processing image...");
         processImage();
         processed = true;
         refresh = true;
+        // hideLoadingOverlay();
       }
-    }
       
+    }
+
     colorPicker.style.display = "inline";
     opacitySlider.style.display = "inline";
     processedCanvas.style.display = "inline";
