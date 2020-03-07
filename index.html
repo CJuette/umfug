@@ -24,20 +24,43 @@
       <h1 class="title">Umfüg</h1>
       <h1 class="titleShadow">Umfüg</h1>
     </div>
-    <div class="uploadButtonWrapper">
-      <div class="uploadButtonWrapperBorder"></div>
-      <button>Select a file or drag it here</button>
-      <input type="file" id="fileInput" name="file" />
+    <div class="buttonWrapper" style="width: 50rem; height: 20rem;">
+      <div class="buttonWrapperBorder"></div>
+      <button id="uploadButton">Select a file or drag it here</button>
+      <div class="insideButton">
+        <input type="file" id="fileInput" name="file" />
+      </div>
     </div>
-    <div class="content">
+    <div class="content" id="content">
       <img id="imageSrc" alt="No Image"/>
-      <canvas id="mainCanvas"></canvas>
-      <canvas id="patchCanvas"></canvas>
-      <input type="color" id="colorPicker" value="#ff0000">
-      <input type="range" id="opacitySlider" min="0" max="100" value="50" step="1">
-      <canvas id="processedCanvas"></canvas>
-      <button id="downloadButton">Download Image</button>
-      <button id="copyToInput">Copy to Input</button>
+      <div class="canvasArea">
+        <div class="canvasFlexContainer">
+          <canvas id="mainCanvas"></canvas>
+        </div>
+      </div>
+      
+      <div class="controlPanel">
+        <div class="canvasArea">
+          <div class="canvasFlexContainer">
+            <canvas id="patchCanvas"></canvas>
+          </div>
+        </div>
+        <button id="copyToInput" class="button button-outline">Copy to Input</button>
+        <label for="modeSelector">Mode</label>
+        <select id="modeSelector">
+          <option value="findAndColor">Find + Color</option>
+        </select>
+        <label for="colorPicker">Color</label>
+        <input type="color" id="colorPicker" value="#ff0000">
+        <label for="opacitySlider">Opacity</label>
+        <input type="range" id="opacitySlider" min="0" max="100" value="50" step="1">
+        <a id="downloadButton"><button class="button button-outline">Download Image</button></a>
+      </div>
+      <div class="canvasArea">
+        <div class="canvasFlexContainer">
+          <canvas id="processedCanvas"></canvas>
+        </div>
+      </div>
     </div>
   </div>
 

@@ -11,9 +11,14 @@ html
     background-size: cover;
 }
 
+:root 
+{
+    --opacity-slider-width: 50%;
+}
+
 .titleContainer {
     margin: 5rem auto 5rem auto;
-    width: fit-content;
+    width: max-content;
     position: relative;
 }
 
@@ -47,27 +52,27 @@ h1.titleShadow
     left: 0;
 }
 
-.uploadButtonWrapper 
+.buttonWrapper 
 {
     position: relative;
     display: block;
-    width: 50rem;
     margin: 0 auto;
-    height: 20rem;
-    width: fit-content;
+    width: max-content;
     background: #e6eef3;
     border-radius: 0.5rem;
     /* border: 2px solid rgb(39,4,127); */
     box-shadow: 0 0 0 2px rgb(148, 138, 171);
     transition: box-shadow 0.6s linear;
+    cursor: pointer;
 }
 
-.uploadButtonWrapper:hover
+.buttonWrapper:hover
 {
     box-shadow: 0 0 0 0 rgba(0,0,0,0);
+    cursor: pointer;
 }
 
-.uploadButtonWrapperBorder
+.buttonWrapperBorder
 {
     position: absolute;
     top: 0;
@@ -81,27 +86,81 @@ h1.titleShadow
     background: rgb(39,4,127);
     background: linear-gradient(36deg, rgba(39,4,127,1) 6%, rgba(237,99,48,1) 37%, rgba(218,50,160,1) 63%, rgba(13,181,216,1) 88%);
     box-shadow: 0 3px 3px rgba(0,0,0,0.3);
+    cursor: pointer;
 }
 
-.uploadButtonWrapper button 
+.buttonWrapper button 
 {
     background-color: transparent;
     color: #424242;
-    width: 50rem;
+    width: 100%;
     height: 100%;
     border: none;
     cursor: pointer;
+    margin: 0;
 }
 
-.uploadButtonWrapper input#fileInput 
+.buttonWrapper input#fileInput 
 {
     position: absolute;
     left: 0;
-    top: 0;
-    height: 100%;
+    top: -100%;
+    height: 200%;
     width: 100%;
     opacity: 0;
     cursor: pointer;
+}
+
+.noShadow
+{
+    box-shadow: none;
+}
+
+.button {
+    background-color: #a9a9a9;
+    border-color: #a9a9a9;
+}
+
+.button:hover
+{
+    border-color: #bf23bb;
+    background-color: #bf23bb;
+}
+
+.controlPanel > button
+{
+    width: 100%;
+}
+
+#downloadButton > .button:hover
+{
+    border-color: #ed6331;
+    color: #ed6331;
+}
+
+.button.button-outline:hover
+{
+    border-color: #bf23bb;
+    color: #bf23bb;
+}
+
+.button.button-clear,
+.button.button-outline {
+background-color: transparent;
+color: #a9a9a9;
+}
+.button.button-clear {
+border-color: transparent;
+}
+
+.insideButton
+{
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
 #container
@@ -110,32 +169,107 @@ h1.titleShadow
     margin: 0 auto;
 }
 
-.content
-{
+.content {
     /* padding: 5rem; */
-    background: white;
-    box-shadow: 0 3px 3px rgba(0,0,0,0.2);
-    /* margin-top: 5rem; */
+    margin-top: 5rem;
+    /* display: flex; */
+    display: none;
+    justify-content: center;
+    width: 100%;
+    align-content: flex-start;
+    /* flex-direction: column; */
+    align-items: flex-start;
+    align-items: center;
+    align-items: stretch;
+    align-content: stretch;
 }
 
 #mainCanvas
 {
-    display: none;
-    max-width: 500px;
     cursor: crosshair;
 }
 
 #processedCanvas
 {
-    max-width: 500px;
-    display: none;
+}
+
+.canvasArea::before {
+    content: '';
+    width: 100%;
+    height: 100%;
+    background: white;
+    display: block;
+}
+.canvasArea {
+    flex-grow: 2;
+    flex: none;
+    flex-basis: 40%;
+    /* flex-shrink: 1; */
+    width: 40%;
+    position: relative;
+    padding-top: 40%;
+    margin: 2% 3%;
+}
+
+.canvasArea::before {
+    content: '';
+    width: 110%;
+    height: 110%;
+    background: #cccccc;
+    /* display: block; */
+    position: absolute;
+    /* padding-top: 100%; */
+    /* margin: -100%; */
+    padding: -10px;
+    top: -5%;
+    left: -5%;
+    border-radius: 0.4rem;
+    border: 4px solid #e6eef3;
+    /* right: 0; */
+    /* bottom: 0; */
+    /* background-color: rgb(59,59,59); */
+    /* background: linear-gradient(0deg, rgba(59,59,59,1) 12%, rgba(122,122,122,1) 44%, rgba(105,105,105,1) 81%); */
+    box-shadow: 0 2px 2px rgba(0,0,0,0.5);
+    background-color: #bfbfbf;
+    background-image: linear-gradient(45deg, #a9a9a9 25%, transparent 25%, transparent 75%, #a9a9a9 75%, #a9a9a9), linear-gradient(45deg, #a9a9a9 25%, transparent 25%, transparent 75%, #a9a9a9 75%, #a9a9a9);
+    background-size: 16px 16px;
+    background-position: 0 0, 8px 8px;
+}
+
+canvas {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.controlPanel > .canvasArea {
+    width: 60%;
+    margin: 4px auto calc(8px + 1.5rem) auto;
+    padding-top: 60%;
+}
+
+.canvasFlexContainer {
+    width: calc(110% - 8px);
+    height: calc(110% - 8px);
+    position: absolute;
+    top: calc(-5% + 4px);
+    left: calc(-5% + 4px);
+    align-content: center;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    overflow: hidden;
+}
+
+.patchCanvasArea
+{
+
 }
 
 #patchCanvas
 {
-    max-width: 50px;
+    /* max-width: 50px;
     max-height: 50px;
-    display: none;
+    display: none; */
 }
 
 #imageSrc
@@ -143,19 +277,93 @@ h1.titleShadow
     display: none;
 }
 
+label {
+    font-variant: all-small-caps;
+}
+
+input[type=color]
+{
+    border-radius: .4rem;
+    background: transparent;
+    
+    height: 3.8rem;
+}
+
 #colorPicker
 {
-    display: none;
+    width: 100%;
+}
+
+#colorPicker:hover
+{
+    --color-border-color: #ff0000;
+    /* border-color: #ff0000; */
+    border-color: var(--color-border-color);
 }
 
 #opacitySlider
 {
-    display: none;
+}
+
+input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 15px;
+    border-radius: 5px;  
+    background: #d3d3d3;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+    position: relative;
+}
+
+input[type=range]:hover {
+    opacity: 1; /* Fully shown on mouse-over */
+  }
+
+input[type=range]::before {
+    content: '';
+    background: rgb(39,4,127);
+background: linear-gradient(36deg, rgba(39,4,127,1) 6%, rgba(13,181,216,1) 88%);
+    width: var(--opacity-slider-width);
+    height: 100%;
+    z-index: 0;
+    position: absolute;
+    border-radius: 0.4rem;
+}
+
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%; 
+    background-color: #27047f;
+    background-image: url(img/triangles.png);
+    background-position: right;
+    background-size: 500%;
+    -webkit-text-fill-color: transparent;
+    cursor: pointer;
+    z-index: 1;
+    position: relative;
+}
+
+input[type=range]::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%; 
+    background-color: #27047f;
+    background-image: url(img/triangles.png);
+    background-position: right;
+    background-size: 500%;
+    cursor: pointer;
+    z-index: 1;
+    position: relative;
 }
 
 #downloadButton
 {
-    display: none;
 }
 
 
@@ -185,7 +393,6 @@ h1.titleShadow
 
 #copyToInput
 {
-    display: none;
 }
 
 #loadingTitle

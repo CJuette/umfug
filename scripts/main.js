@@ -13,6 +13,11 @@ const loadingOverlay = document.getElementById('loadingOverlay');
 const loadingMessage = document.getElementById('loadingTitle');
 const copyToInputButton = document.getElementById('copyToInput');
 
+const uploadButton = document.getElementById('uploadButton');
+const uploadButtonWrapper = uploadButton.parentNode;
+
+const contentElement = document.getElementById('content');
+
 let img;
 let processedImage;
 let template;
@@ -278,7 +283,6 @@ function updateState(state)
   }
   else if(state == "loaded" || state == "roiselected")
   {
-    document.body.style.backgroundColor = 'white';
 
     if(state == "roiselected")
     {
@@ -302,27 +306,19 @@ function updateState(state)
       
     }
 
-    colorPicker.style.display = "inline";
-    opacitySlider.style.display = "inline";
-    processedCanvas.style.display = "inline";
-    patchCanvas.style.display = "inline";
-    downloadButton.style.display = "inline";
-    copyToInputButton.style.display = "inline";
+
       
   }
   else if(state == "selectroi")
   {
     processed = false;
     matchesFound = false;
-    document.body.style.backgroundColor = '#eee';
-    canvas.style.display = "inline";
 
-    colorPicker.style.display = "none";
-    opacitySlider.style.display = "none";
-    processedCanvas.style.display = "none";
-    patchCanvas.style.display = "none";
-    downloadButton.style.display = "none";
-    copyToInputButton.style.display = "none";
+    uploadButtonWrapper.style.height = 'auto';
+    uploadButtonWrapper.style.width = 'max-content';
+    uploadButton.innerHTML = 'Select New File';
+
+    contentElement.style.display = 'flex';
   }
 }
 
@@ -339,11 +335,13 @@ imgElement.onload = function() {
 colorPicker.addEventListener('change', (e) => {
   processed = false;
   updateState();
+  colorPicker.style.setProperty('--color-border-color', colorPicker.value);
 }, false);
 
 opacitySlider.addEventListener('input', (e) => {
   processed = false;
   updateState();
+  document.documentElement.style.setProperty('--opacity-slider-width', opacitySlider.value + '%');
 }, false);
 
 downloadButton.onclick = function(){
