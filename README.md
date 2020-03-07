@@ -1,4 +1,5 @@
-# IFAR - Image Find and Replace
+# Umfüg
 
-Small tool to select a region in an image, find all occurences of this patch
-in the image and then color or replace it.
+An image Umfüger.
+
+https://chritzel.net/umfug/
