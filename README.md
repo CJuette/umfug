@@ -2,4 +2,4 @@
 
 An image Umfüger.
 
-https://chritzel.net/umfug/
+https://cjuette.de/umfug/
